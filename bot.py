@@ -1,101 +1,58 @@
 import discord
 import os
 
-from discord.ext import commands
-from time import sleep
-from discord.errors import LoginFailure,HTTPException
+from discord import app_commands, ActivityType    
+from asyncio import sleep
+
+#-------------------start-of-yClient()--------------------------------------------------------------
+
+class yClient(discord.Client):
+
+    def __init__(self, intents):
+        super().__init__(intents=intents)
+        self.synced = False
+    
+    async def on_ready(self):
+        await self.wait_until_ready()
+        if not self.synced:
+            await tree.sync()
+            self.synced = True
+        print('Yasaseru is ready.')
+
+#-------------------start-of-main()--------------------------------------------------------------
 
 intents = discord.Intents.default()
 intents.members = True  # to receive member related events
 intents.guild_messages = True  # to receive guild message related events
 intents.message_content = True  # to receive message content related events
 
-##-------------------start-of-initialize_bot()---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+activity = discord.Activity(name='/translate', type=discord.ActivityType.watching)
 
-def initialize_bot(configDir):
+Yasaseru = yClient(intents=intents)
 
-    '''
+Yasaseru.activity = activity
 
-    Initializes the bot and returns the client object
-    
-    Parameters:
-    configDir (string) - the directory where the config files are stored for Yasaseru
+tree = app_commands.CommandTree(Yasaseru)
 
-    Returns:
-    Yasaseru (discord.ext.commands.bot.Bot) - the client object for Yasaseru
-    '''
-
-    token = "" ## the bot token
-
-    try:
-        with open(os.path.join(configDir,'botToken.txt'), 'r', encoding='utf-8') as file:  ## get saved bot token if exists
-            token = file.read()
-
-        Yasaseru = commands.Bot(command_prefix='!', intents=intents)
-        
-        print("Used saved token in " + os.path.join(configDir,'botToken.txt')) 
-        
-    except (LoginFailure,HTTPException): ## else try to get  token manually
-                            
-            token = input("DO NOT DELETE YOUR COPY OF THE TOKEN\n\nPlease enter Yasaseru's bot token you have : ")
-
-            try: ## if valid save the  token
- 
-                if(os.path.isdir(configDir) == False):
-                    os.mkdir(configDir, 0o666)
-                    print(configDir + " created due to lack of the folder")
-
-                    sleep(.1)
-                            
-                if(os.path.isfile(os.path.join(configDir,'botToken.txt')) == False):
-                    print(os.path.join(configDir,'botToken.txt') + " was created due to lack of the file")
-
-                    with open(os.path.join(configDir,'botToken.txt'), 'w+', encoding='utf-8') as file: 
-                        file.write(token)
-
-                    sleep(.1)
-
-                    Yasaseru = commands.Bot(command_prefix='!', intents=intents)
-
-            except (LoginFailure,HTTPException): ## if invalid token exit
-                     
-                os.system('cls')
-                        
-                print("Authorization error with bot, please double check your token as it appears to be incorrect.\n")
-                os.system('pause')
-                        
-                exit()
-
-            except Exception as e: ## other error, alert user and raise it
-
-                os.system('cls')
-                        
-                print("Unknown error with bot, The error is as follows " + str(e)  + "\nThe exception will now be raised.\n")
-                os.system('pause')
-
-                raise e
-            
-    return Yasaseru,token
-
-##-------------------start-of-main()---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-configDir = os.path.join(os.environ['USERPROFILE'],"YasaseruConfig")
-
-Yasaseru,token = initialize_bot(configDir)
-
-##-------------------start-of-on_ready()---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-@Yasaseru.event
-async def on_ready():
-    print('Yasaseru is ready.')
-    
-##-------------------start-of-on_message()---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#-------------------start-of-on_message()--------------------------------------------------------------
 
 @Yasaseru.event
 async def on_message(message):
     if message.content == "hi":
         await message.channel.send('Hello, world!')
 
-##-------------------start-of-sub_main()---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#-------------------start-of-translate()--------------------------------------------------------------
 
-Yasaseru.run(token)
+@tree.command(name="translate", description="Translates a message from Japanese to English")
+async def translate(interaction: discord.Interaction, message: str):
+    await interaction.response.send_message(str(message) + " was altered", ephemeral=True)
+
+#-------------------start-of-translate_menu()--------------------------------------------------------------
+
+@tree.context_menu(name = "translate")
+async def translate_menu(interaction: discord.Interaction, message: discord.Message):
+    await interaction.response.send_message(str(message.content) + " was altered", ephemeral=True) 
+
+#-------------------start-of-sub_main()--------------------------------------------------------------
+
+Yasaseru.run(os.environ.get('YASASERU_TOKEN'))
