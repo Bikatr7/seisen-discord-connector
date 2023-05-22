@@ -1,8 +1,8 @@
-import discord
+## built-in modules
 import os
 
-from discord import app_commands, ActivityType    
-from asyncio import sleep
+## third-party modules
+import discord
 
 #-------------------start-of-yClient()--------------------------------------------------------------
 
@@ -32,7 +32,7 @@ Yasaseru = yClient(intents=intents)
 
 Yasaseru.activity = activity
 
-tree = app_commands.CommandTree(Yasaseru)
+tree = discord.app_commands.CommandTree(Yasaseru)
 
 #-------------------start-of-on_message()--------------------------------------------------------------
 
