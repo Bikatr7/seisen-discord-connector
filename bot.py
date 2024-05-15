@@ -17,7 +17,7 @@ class yClient(discord.Client):
         if not self.synced:
             await tree.sync()
             self.synced = True
-        print('Yasaseru is ready.')
+        print('SDC is ready.')
 
 #-------------------start-of-main()--------------------------------------------------------------
 
@@ -28,15 +28,15 @@ intents.message_content = True  # to receive message content related events
 
 activity = discord.Activity(name='/translate', type=discord.ActivityType.watching)
 
-Yasaseru = yClient(intents=intents)
+SDC = yClient(intents=intents)
 
-Yasaseru.activity = activity
+SDC.activity = activity
 
-tree = discord.app_commands.CommandTree(Yasaseru)
+tree = discord.app_commands.CommandTree(SDC)
 
 #-------------------start-of-on_message()--------------------------------------------------------------
 
-@Yasaseru.event
+@SDC.event
 async def on_message(message):
     if message.content == "hi":
         await message.channel.send('Hello, world!')
@@ -55,4 +55,4 @@ async def translate_menu(interaction: discord.Interaction, message: discord.Mess
 
 #-------------------start-of-sub_main()--------------------------------------------------------------
 
-Yasaseru.run(os.environ.get('YASASERU_TOKEN'))
+SDC.run(os.environ.get('SDC_TOKEN'))
